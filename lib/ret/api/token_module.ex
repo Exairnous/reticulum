@@ -12,6 +12,12 @@ defmodule Ret.Api.TokenModule do
   No concept of validating signature so we just decode the token
   """
   def peek(mod, token) do
+    IO.inspect("mod:")
+    IO.inspect(mod)
+    IO.inspect("token:")
+    IO.inspect(token)
+    IO.inspect("decode_token:")
+    IO.inspect(decode_token(mod, token))
     case decode_token(mod, token) do
       {:ok, %Credentials{} = credentials} -> %{claims: credentials}
       {:ok, {:error, _reason}} -> nil

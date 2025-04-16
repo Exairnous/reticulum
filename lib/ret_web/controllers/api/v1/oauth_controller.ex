@@ -62,8 +62,12 @@ defmodule RetWeb.Api.V1.OAuthController do
   end
 
   def handle_chat_oauth(params, conn) do
+    IO.inspect("params:")
+    IO.inspect(params)
     %{"type" => type, "code" => code, "state" => state} = params
 
+    IO.inspect("state:")
+    IO.inspect(state)
     %{claims: %{"hub_sid" => hub_sid}} = OAuthToken.peek(state)
     hub = Hub |> Repo.get_by(hub_sid: hub_sid)
 
