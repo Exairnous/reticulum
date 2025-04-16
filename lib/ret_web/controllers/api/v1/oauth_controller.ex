@@ -68,6 +68,8 @@ defmodule RetWeb.Api.V1.OAuthController do
 
     IO.inspect("state:")
     IO.inspect(state)
+    IO.inspect("peek:")
+    IO.inspect(OAuthToken.peek(state))
     %{claims: %{"hub_sid" => hub_sid}} = OAuthToken.peek(state)
     hub = Hub |> Repo.get_by(hub_sid: hub_sid)
 
