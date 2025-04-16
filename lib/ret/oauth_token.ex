@@ -4,7 +4,7 @@ defmodule Ret.OAuthToken do
   They allow us to verify that an incoming OAuth request can be trusted and they contain state used to complete
   the OAuth flow.
   """
-  use Guardian, otp_app: :ret, secret_fetcher: Ret.OAuthTokenSecretFetcher
+  use Guardian, otp_app: :ret, secret_fetcher: Ret.OAuthTokenSecretFetcher, token_module: Ret.Api.TokenModule
 
   def subject_for_token(_, _), do: {:ok, nil}
 
