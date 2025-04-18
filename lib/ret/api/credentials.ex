@@ -118,6 +118,10 @@ defmodule Ret.Api.Credentials do
   end
 
   def where_token_hash_is(query, hash) do
+    IO.inspect("query:")
+    IO.inspect(query)
+    IO.inspect("hash:")
+    IO.inspect(hash)
     from [credential, _account] in query, where: credential.token_hash == ^hash
   end
 
