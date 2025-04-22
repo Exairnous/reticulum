@@ -6,6 +6,7 @@ defmodule Ret.DiscordClient do
   @discord_api_base "https://discordapp.com/api/v6"
 
   def get_oauth_url(hub_sid) do
+    IO.inspect("Reached: get_oauth_url")
     authorize_params = %{
       response_type: "code",
       client_id: module_config(:client_id),
@@ -18,6 +19,7 @@ defmodule Ret.DiscordClient do
   end
 
   def fetch_access_token(oauth_code) do
+    IO.inspect("Reached: fetch_access_token")
     body = {
       :form,
       [
@@ -40,6 +42,7 @@ defmodule Ret.DiscordClient do
   end
 
   def fetch_user_info(access_token) do
+    IO.inspect("Reached: fetch_user_info")
     "#{@discord_api_base}/users/@me"
     |> Ret.HttpUtils.retry_get_until_success(
       headers: [{"authorization", "Bearer #{access_token}"}]
@@ -48,18 +51,23 @@ defmodule Ret.DiscordClient do
     |> Poison.decode!()
   end
 
-  def has_permission?(nil, _, _), do: false
+  def has_permission?(nil, _, _) do
+    IO.inspect("Reached: has_permission? 1")
+    false
+  end
 
   def has_permission?(
         %Ret.OAuthProvider{} = oauth_provider,
         %Ret.HubBinding{} = hub_binding,
         permission
       ) do
+    IO.inspect("Reached: has_permission? 2")
     oauth_provider.provider_account_id |> has_permission?(hub_binding, permission)
   end
 
   def has_permission?(provider_account_id, %Ret.HubBinding{} = hub_binding, permission)
       when is_binary(provider_account_id) do
+    IO.inspect("Reached: has_permission? 3")
     permissions =
       compute_permissions(provider_account_id, hub_binding.community_id, hub_binding.channel_id)
       |> permissions_to_map
@@ -71,9 +79,13 @@ defmodule Ret.DiscordClient do
         %Ret.OAuthProvider{source: :discord, provider_account_id: provider_account_id},
         %Ret.HubBinding{community_id: community_id}
       ) do
+    IO.inspect("Reached: fetch_display_name")
     nickname =
       case Cachex.fetch(:discord_api, "/guilds/#{community_id}/members/#{provider_account_id}") do
         {status, result} when status in [:commit, :ok] -> "#{result["nick"]}"
+        IO.inspect("result:")
+        IO.inspect(result)
+        "#{result["nick"]}"
       end
 
     if nickname == "" do
@@ -89,6 +101,7 @@ defmodule Ret.DiscordClient do
         source: :discord,
         provider_account_id: provider_account_id
       }) do
+    IO.inspect("Reached: fetch_community_identifier")
     case Cachex.fetch(:discord_api, "/users/#{provider_account_id}") do
       {status, result} when status in [:commit, :ok] ->
         "#{result["username"]}##{result["discriminator"]}"
@@ -96,6 +109,7 @@ defmodule Ret.DiscordClient do
   end
 
   def api_request(path) do
+    IO.inspect("Reached: api_request")
     "#{@discord_api_base}#{path}"
     |> Ret.HttpUtils.retry_get_until_success(
       headers: [{"authorization", "Bot #{module_config(:bot_token)}"}]
@@ -143,12 +157,14 @@ defmodule Ret.DiscordClient do
   }
 
   defp permissions_to_map(bit_field) do
+    IO.inspect("Reached: permissions_to_map")
     bit_field |> BitFieldUtils.permissions_to_map(@permissions)
   end
 
   # compute_base_permissions and compute_overwrites based on pseudo-code at 
   # https://discordapp.com/developers/docs/topics/permissions#permission-overwrites
   defp compute_base_permissions(discord_user_id, community_id, user_roles) do
+    IO.inspect("Reached: compute_base_permissions")
     owner_id =
       case Cachex.fetch(:discord_api, "/guilds/#{community_id}") do
         {status, result} when status in [:commit, :ok] -> result |> Map.get("owner_id")
@@ -178,6 +194,7 @@ defmodule Ret.DiscordClient do
   end
 
   defp compute_overwrites(base_permissions, discord_user_id, community_id, channel_id, user_roles) do
+    IO.inspect("Reached: compute_overwrites")
     if (base_permissions &&& @administrator) == @administrator do
       @all
     else
@@ -224,6 +241,7 @@ defmodule Ret.DiscordClient do
   end
 
   defp compute_permissions(discord_user_id, community_id, channel_id) do
+    IO.inspect("Reached: compute_permissions")
     user_roles =
       case Cachex.fetch(:discord_api, "/guilds/#{community_id}/members/#{discord_user_id}") do
         {:error, _} -> nil
