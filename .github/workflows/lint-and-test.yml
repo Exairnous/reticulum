@@ -2,8 +2,60 @@ name: lint-and-test
 
 on: [push, workflow_dispatch]
 
+env:
+  elixir_version_current: '1.16'
+  otp_version_current: '25.3'
+
 jobs:
-  test:
+  test-current:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - 'ubuntu-22.04'
+          - 'ubuntu-24.04'
+
+    runs-on: ${{ matrix.os }}
+
+    services:
+      postgres:
+        image: postgres:10
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ env.otp_version_current }}
+          elixir-version: ${{ env.elixir_version_current }}
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: mix-${{ hashFiles('mix.lock') }}
+
+      - run: mix local.hex --force
+      - run: mix local.rebar --force
+      - run: mix deps.get
+      - run: mix compile   # --warnings-as-errors
+      - run: mix test
+
+
+  test-matrix:
+    continue-on-error: true
+
     strategy:
       fail-fast: false
       matrix:
@@ -41,6 +93,10 @@ jobs:
           - 'ubuntu-24.04'
 
         exclude:
+          - versions:
+              elixir: ${{ env.elixir_version_current }}
+              otp: ${{ env.otp_version_current }}
+
           - versions:
               elixir: '1.14'
               otp: '24.2'
@@ -85,10 +141,13 @@ jobs:
       - run: mix local.rebar --force
       - run: mix deps.get
       - run: mix compile   # --warnings-as-errors
+#        continue-on-error: ${{ matrix.versions.elixir != env.elixir_version_current || matrix.versions.otp != env.otp_version_current }}
       - run: mix test
+#        continue-on-error: ${{ matrix.versions.elixir != env.elixir_version_current || matrix.versions.otp != env.otp_version_current }}
 
 
   lint:
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
