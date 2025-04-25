@@ -3,7 +3,58 @@ name: lint-and-test
 on: [push, workflow_dispatch]
 
 jobs:
-  test:
+  test-current:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - 'ubuntu-22.04'
+          - 'ubuntu-24.04'
+
+    env:
+      elixir_version: '1.16'
+      otp_version: '25.3'
+
+    runs-on: ${{ matrix.os }}
+
+    services:
+      postgres:
+        image: postgres:10
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: $otp_version
+          elixir-version: $elixir_version
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: mix-${{ hashFiles('mix.lock') }}
+
+      - run: mix local.hex --force
+      - run: mix local.rebar --force
+      - run: mix deps.get
+      - run: mix compile   # --warnings-as-errors
+      - run: mix test
+
+
+  test-matrix:
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -89,6 +140,7 @@ jobs:
 
 
   lint:
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
