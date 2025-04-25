@@ -36,8 +36,8 @@ jobs:
 
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: $otp_version
-          elixir-version: $elixir_version
+          otp-version: ${{ env.otp_version }}
+          elixir-version: ${{ env.elixir_version }}
 
       - uses: actions/cache@v4
         with:
