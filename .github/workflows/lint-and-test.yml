@@ -7,7 +7,19 @@ env:
   otp_version_current: '25.3'
 
 jobs:
+  variables:
+    runs-on: ubuntu-latest
+    outputs:
+      elixir_version_current: ${{ env.elixir_version_current }}
+      otp_version_current: ${{ env.otp_version_current }}
+    steps:
+      - name: Output variables
+        run: |
+          :
+
+
   test-current:
+    needs: [variables]
     strategy:
       fail-fast: false
       matrix:
@@ -36,8 +48,8 @@ jobs:
 
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: ${{ env.otp_version_current }}
-          elixir-version: ${{ env.elixir_version_current }}
+          otp-version: ${{ needs.variables.outputs.otp_version_current }}
+          elixir-version: ${{ needs.variables.outputs.elixir_version_current }}
 
       - uses: actions/cache@v4
         with:
@@ -54,6 +66,7 @@ jobs:
 
 
   test-matrix:
+    needs: [variables]
     continue-on-error: true
 
     strategy:
@@ -94,8 +107,8 @@ jobs:
 
         exclude:
           - versions:
-              elixir: ${{ env.elixir_version_current }}
-              otp: ${{ env.otp_version_current }}
+              elixir: ${{ needs.variables.outputs.elixir_version_current }}
+              otp: ${{ needs.variables.outputs.otp_version_current }}
 
           - versions:
               elixir: '1.14'
@@ -141,9 +154,9 @@ jobs:
       - run: mix local.rebar --force
       - run: mix deps.get
       - run: mix compile   # --warnings-as-errors
-#        continue-on-error: ${{ matrix.versions.elixir != env.elixir_version_current || matrix.versions.otp != env.otp_version_current }}
+#        continue-on-error: ${{ matrix.versions.elixir != needs.variables.outputs.elixir_version_current || matrix.versions.otp != needs.variables.outputs.otp_version_current }}
       - run: mix test
-#        continue-on-error: ${{ matrix.versions.elixir != env.elixir_version_current || matrix.versions.otp != env.otp_version_current }}
+#        continue-on-error: ${{ matrix.versions.elixir != needs.variables.outputs.elixir_version_current || matrix.versions.otp != needs.variables.outputs.otp_version_current }}
 
 
   lint:
