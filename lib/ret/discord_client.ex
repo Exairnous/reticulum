@@ -88,12 +88,20 @@ defmodule Ret.DiscordClient do
         "#{result["nick"]}"
       end
 
-    if nickname == "" do
+    nickname = if nickname == "" do
+       case Cachex.fetch(:discord_api, "/users/#{provider_account_id}") do
+        {status, result} when status in [:commit, :ok] -> "#{result["global_name"]}"
+      end
+      else
+        nickname
+    end
+
+    nickname = if nickname == "" do
       case Cachex.fetch(:discord_api, "/users/#{provider_account_id}") do
         {status, result} when status in [:commit, :ok] -> "#{result["username"]}"
       end
-    else
-      nickname
+      else
+        nickname
     end
   end
 
@@ -104,7 +112,7 @@ defmodule Ret.DiscordClient do
     IO.inspect("Reached: fetch_community_identifier")
     case Cachex.fetch(:discord_api, "/users/#{provider_account_id}") do
       {status, result} when status in [:commit, :ok] ->
-        "#{result["username"]}##{result["discriminator"]}"
+        "#{result["username"]}"
     end
   end
 
