@@ -3,7 +3,7 @@ defmodule Ret.DiscordClient do
   import Bitwise
 
   @oauth_scope "identify email"
-  @discord_api_base "https://discordapp.com/api/v6"
+  @discord_api_base "https://discord.com/api/v10"
 
   def get_oauth_url(hub_sid) do
     IO.inspect("Reached: get_oauth_url")
