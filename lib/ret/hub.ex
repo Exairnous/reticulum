@@ -869,6 +869,7 @@ defmodule Ret.Hub do
 
   # The account argument here can be a Ret.Account, a Ret.OAuthProvider or nil.
   def perms_for_account(%Ret.Hub{} = hub, account) do
+    IO.inspect("perms_for_account")
     %{
       join_hub: account |> can?(join_hub(hub)),
       update_hub: account |> can?(update_hub(hub)),
@@ -971,6 +972,7 @@ defimpl Canada.Can, for: Ret.Account do
   # Bound hubs - Join perm
   def can?(%Ret.Account{} = account, :join_hub, %Ret.Hub{hub_bindings: hub_bindings})
       when hub_bindings |> length > 0 do
+    IO.inspect("can join hub?")
     hub_bindings |> Enum.any?(&(account |> Ret.HubBinding.member_of_channel?(&1)))
   end
 

@@ -69,6 +69,7 @@ defmodule Ret.HubBinding do
         %Ret.OAuthProvider{source: :discord} = oauth_provider,
         %Ret.HubBinding{type: :discord} = hub_binding
       ) do
+    IO.inspect("member_of_channel? Discord")
     oauth_provider |> Ret.DiscordClient.has_permission?(hub_binding, :view_channel)
   end
 

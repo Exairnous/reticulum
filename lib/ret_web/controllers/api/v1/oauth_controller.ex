@@ -124,6 +124,7 @@ defmodule RetWeb.Api.V1.OAuthController do
   # Discord user does not have a verified email, so we can't create an account for them. Instead, we generate a perms
   # token to let them join the hub if permitted.
   defp process_chat_oauth(conn, source, chat_user_id, false = _verified, _email, hub) do
+    IO.inspect("process_chat_oauth")
     oauth_provider = %Ret.OAuthProvider{provider_account_id: chat_user_id, source: source}
 
     perms_token =

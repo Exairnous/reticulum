@@ -72,34 +72,59 @@ defmodule RetWeb.HubChannel do
   end
 
   defp perform_join(socket, hub, context, params) do
+    IO.inspect("perform_join?")
+    IO.inspect("socket:")
+    IO.inspect(socket)
+    IO.inspect("hub:")
+    IO.inspect(hub)
+    IO.inspect("context:")
+    IO.inspect(context)
+    IO.inspect("params:")
+    IO.inspect(params)
     account =
       case Ret.Guardian.resource_from_token(params["auth_token"]) do
         {:ok, %Account{} = account, _claims} -> account
         _ -> nil
       end
-
+    IO.inspect("account")
+    IO.inspect(account)
     hub_requires_oauth = hub.hub_bindings |> Enum.empty?() |> Kernel.not()
-
+    IO.inspect("hub_requires_oauth")
+    IO.inspect(hub_requires_oauth)
     bot_access_key = Application.get_env(:ret, :bot_access_key)
     has_valid_bot_access_key = !!(bot_access_key && params["bot_access_key"] == bot_access_key)
+    IO.inspect("bot_access_key:")
+    IO.inspect(bot_access_key)
+    IO.inspect("has_valid_bot_access_key:")
+    IO.inspect(has_valid_bot_access_key)
 
     account_has_provider_for_hub =
       account |> Ret.Account.matching_oauth_providers(hub) |> Enum.empty?() |> Kernel.not()
+    IO.inspect("account_has_provider_for_hub:")
+    IO.inspect(account_has_provider_for_hub)
 
     account_can_join = account |> can?(join_hub(hub))
+    IO.inspect("account_can_join:")
+    IO.inspect(account_can_join)
     account_can_update = account |> can?(update_hub(hub))
+    IO.inspect("account_can_update:")
+    IO.inspect(account_can_update)
 
     perms_token = params["perms_token"]
 
     has_perms_token = perms_token != nil
 
     decoded_perms = perms_token |> Ret.PermsToken.decode_and_verify()
+    IO.inspect("decoded_perms:")
+    IO.inspect(decoded_perms)
 
     perms_token_can_join =
       case decoded_perms do
         {:ok, %{"join_hub" => true}} -> true
         _ -> false
       end
+    IO.inspect("perms_token_can_join:")
+    IO.inspect(perms_token_can_join)
 
     {oauth_account_id, oauth_source} =
       case decoded_perms do
@@ -109,8 +134,13 @@ defmodule RetWeb.HubChannel do
         _ ->
           {nil, nil}
       end
+    IO.inspect("oauth_account_id and oauth_source:")
+    IO.inspect(oauth_account_id)
+    IO.inspect(oauth_source)
 
     has_active_invite = Ret.HubInvite.active?(hub, params["hub_invite_id"])
+    IO.inspect("has_active_invite")
+    IO.inspect(has_active_invite)
 
     params =
       params
@@ -126,7 +156,8 @@ defmodule RetWeb.HubChannel do
         oauth_source: oauth_source,
         perms_token_can_join: perms_token_can_join
       })
-
+    IO.inspect("updated params:")
+    IO.inspect(params)
     hub |> join_with_hub(account, socket, context, params)
   end
 
