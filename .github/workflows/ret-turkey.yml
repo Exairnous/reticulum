@@ -4,12 +4,12 @@ on:
     branches:
       - 'master'
       - 'hotfix/**'
-    paths-ignore: [".github", "guides", "README.md", "LICENSE", "CODE_OF_CONDUCT.md"]
+    paths-ignore: [".github/**", "guides/**", "README.md", "LICENSE", "CODE_OF_CONDUCT.md"]
   workflow_dispatch:
 
 jobs:
   turkeyGitops:
-    if: github.repository_owner == 'Hubs-Foundation'
+    if: github.repository_owner == 'Exairnous'
     uses: Hubs-Foundation/hubs-ops/.github/workflows/turkeyGitops.yml@master
     with:
       registry: hubsfoundation
