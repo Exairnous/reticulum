@@ -1,7 +1,7 @@
 # Hubs Server API
 Reticulum includes a [GraphQL](https://graphql.org/) API that grants programmatic access to server resources. 
 
-Note: This API is currently in alpha testing and is not yet available for use. (Users cannot generate API Access Tokens.)
+Note: This API is currently in alpha testing and is not yet recommended for general use. (Users can generate API Access Tokens at `your-instance.domain/tokens`.)
 
 ## Accessing the API
 Hubs Cloud administrators can enable or disable the API by toggling `App Settings > Features > Public API Access` in the admin panel. 
