@@ -60,10 +60,16 @@ defmodule Ret.DiscordClient do
 
   def has_permission?(provider_account_id, %Ret.HubBinding{} = hub_binding, permission)
       when is_binary(provider_account_id) do
+    IO.inspect("provider_account_id:")
+    IO.inspect(provider_account_id)
+    IO.inspect("permission:")
+    IO.inspect(permission)
     permissions =
       compute_permissions(provider_account_id, hub_binding.community_id, hub_binding.channel_id)
       |> permissions_to_map
 
+    IO.inspect("permission map:")
+    IO.inspect(permissions, limit: :infinity)
     permissions[permission]
   end
 
@@ -157,12 +163,15 @@ defmodule Ret.DiscordClient do
   # compute_base_permissions and compute_overwrites based on pseudo-code at 
   # https://discordapp.com/developers/docs/topics/permissions#permission-overwrites
   defp compute_base_permissions(discord_user_id, community_id, user_roles) do
+    IO.inspect("user_roles:")
+    IO.inspect(user_roles, limit: :infinity)
     owner_id =
       case Cachex.fetch(:discord_api, "/guilds/#{community_id}") do
         {status, result} when status in [:commit, :ok] -> result |> Map.get("owner_id")
       end
 
     if owner_id == discord_user_id do
+      IO.inspect("owner_id == discord_user_id")
       @all
     else
       guild_roles =
@@ -170,28 +179,42 @@ defmodule Ret.DiscordClient do
           {status, result} when status in [:commit, :ok] -> result |> Map.new(&{&1["id"], &1})
         end
         # Note: Whether the bitfield values in guild_roles are represented as strings or integers is inconsistent (possibly based on what permissions the user has), so every time they're used they need to be checked and, if needed, converted to integers.
-
+      IO.inspect("guild_roles:")
+      IO.inspect(guild_roles, limit: :infinity)
       role_everyone = guild_roles[community_id]
+      IO.inspect("role_everyone:")
+      IO.inspect(role_everyone)
       permissions = role_everyone["permissions"]
+      IO.inspect("initial permissions:")
+      IO.inspect(permissions)
 
       user_permissions = user_roles |> Enum.map(&guild_roles[&1]["permissions"])
+      IO.inspect("user_permissions:")
+      IO.inspect(user_permissions)
 
       permissions = user_permissions |>
       Enum.reduce(permissions, &(
       if is_binary(&1), do: String.to_integer(&1), else: &1 |||
       if is_binary(&2), do: String.to_integer(&2), else: &2
       ))
+      IO.inspect("final permissions:")
+      IO.inspect(permissions)
 
       if (permissions &&& @administrator) == @administrator do
+        IO.inspect("(permissions &&& @administrator) == @administrator")
         @all
       else
+        IO.inspect("not administrator permissions")
         permissions
       end
     end
   end
 
   defp compute_overwrites(base_permissions, discord_user_id, community_id, channel_id, user_roles) do
+    IO.inspect("base_permissions:")
+    IO.inspect(base_permissions)
     if (base_permissions &&& @administrator) == @administrator do
+      IO.inspect("(base_permissions &&& @administrator) == @administrator")
       @all
     else
       permissions = base_permissions
@@ -205,7 +228,11 @@ defmodule Ret.DiscordClient do
         end
         # Note: Whether the bitfield values in channel_overwrites are represented as strings or integers is inconsistent (possibly based on what permissions the user has), so every time they're used they need to be checked and, if needed, converted to integers.
 
+      IO.inspect("channel_overwrites:")
+      IO.inspect(channel_overwrites, limit: :infinity)
       overwrite_everyone = channel_overwrites[community_id]
+      IO.inspect("overwrite_everyone:")
+      IO.inspect(overwrite_everyone)
 
       permissions =
         if overwrite_everyone do
@@ -215,24 +242,37 @@ defmodule Ret.DiscordClient do
         else
           permissions
         end
+      IO.inspect("overwrite permissions:")
+      IO.inspect(permissions)
+
 
       # Apply role specific overwrites.
       user_permissions =
         user_roles |> Enum.map(&channel_overwrites[&1]) |> Enum.filter(&(&1 != nil))
+      IO.inspect("role permissions 1:")
+      IO.inspect(user_permissions)
 
       allow = user_permissions |> Enum.reduce(@none, &(
       if is_binary(&1["allow"]), do: String.to_integer(&1["allow"]), else: &1["allow"] |||
       &2
       ))
+      IO.inspect("allow:")
+      IO.inspect(allow)
       deny = user_permissions |> Enum.reduce(@none, &(
       if is_binary(&1["deny"]), do: String.to_integer(&1["deny"]), else: &1["deny"] |||
       &2
       ))
+      IO.inspect("deny:")
+      IO.inspect(deny)
 
       permissions = (permissions &&& ~~~deny) ||| allow
+      IO.inspect("role permissions 2:")
+      IO.inspect(permissions)
 
       # Apply member specific overwrite if it exists.
       overwrite_member = channel_overwrites[discord_user_id]
+      IO.inspect("overwrite_member:")
+      IO.inspect(overwrite_member)
 
       permissions =
         if overwrite_member do
@@ -242,12 +282,18 @@ defmodule Ret.DiscordClient do
         else
           permissions
         end
+      IO.inspect("overwrite member permissions:")
+      IO.inspect(permissions)
 
       permissions
     end
   end
 
   defp compute_permissions(discord_user_id, community_id, channel_id) do
+    IO.inspect("community_id:")
+    IO.inspect(community_id)
+    IO.inspect("channel_id:")
+    IO.inspect(channel_id)
     user_roles =
       case Cachex.fetch(:discord_api, "/guilds/#{community_id}/members/#{discord_user_id}") do
         {:error, _} -> nil
@@ -255,6 +301,7 @@ defmodule Ret.DiscordClient do
       end
 
     if user_roles == nil do
+      IO.inspect("user_roles == nil")
       @none
     else
       compute_base_permissions(discord_user_id, community_id, user_roles)
