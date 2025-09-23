@@ -6,8 +6,8 @@ defmodule RetWeb.AuthChannelTest do
   alias RetWeb.{SessionSocket}
   alias Ret.{Account, AppConfig, Repo}
 
-  @test_email "admin1@mozilla.com"
-  @test_email2 "admin2@mozilla.com"
+  @test_email "admin1@hubsfoundation.org"
+  @test_email2 "admin2@hubsfoundation.org"
 
   setup [:create_account]
 
