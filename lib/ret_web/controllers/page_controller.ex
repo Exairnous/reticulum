@@ -722,7 +722,7 @@ defmodule RetWeb.PageController do
       opts =
         ReverseProxyPlug.init(
           upstream: thumbnail_url,
-          client_options: [ssl: [{:versions, [:"tlsv1.2"]}]]
+          client_options: [ssl: [{:versions, [:"tlsv1.2"]}, {:verify, :verify_peer}, {:cacertfile, :certifi.cacertfile()}]]
         )
 
       body = ReverseProxyPlug.read_body(conn)
@@ -794,7 +794,9 @@ defmodule RetWeb.PageController do
             client_options: [
               ssl: [
                 {:server_name_indication, to_charlist(authority)},
-                {:versions, [:"tlsv1.2", :"tlsv1.3"]}
+                {:versions, [:"tlsv1.2", :"tlsv1.3"]},
+                {:verify, :verify_peer},
+                {:cacertfile, :certifi.cacertfile()}
               ]
             ],
             error_callback: fn error -> Logger.error("CORS-proxy error: #{inspect(error)}") end
