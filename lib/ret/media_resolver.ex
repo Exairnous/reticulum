@@ -348,7 +348,7 @@ defmodule Ret.MediaResolver do
     payload =
       "https://api.icosa.gallery/v1/assets/#{asset_id}"
       # Assuming this function sends the request and handles retries
-      |> retry_get_until_success()
+      |> retry_get_until_success([{:verify, :verify_peer}, {:cacertfile, :certifi.cacertfile()}])
       |> Map.get(:body)
       |> Poison.decode!()
 
