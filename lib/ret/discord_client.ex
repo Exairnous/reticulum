@@ -76,23 +76,13 @@ defmodule Ret.DiscordClient do
         {status, result} when status in [:commit, :ok] -> "#{result["nick"]}"
       end
 
-    nickname =
-      if !nickname or nickname == "" do
-        case Cachex.fetch(:discord_api, "/users/#{provider_account_id}") do
-          {status, result} when status in [:commit, :ok] -> "#{result["global_name"]}"
-        end
-      else
-        nickname
+    if !nickname or nickname == "" do
+      case Cachex.fetch(:discord_api, "/users/#{provider_account_id}") do
+        {status, result} when status in [:commit, :ok] -> "#{result["global_name"]}"
       end
-
-    nickname =
-      if !nickname or nickname == "" do
-        case Cachex.fetch(:discord_api, "/users/#{provider_account_id}") do
-          {status, result} when status in [:commit, :ok] -> "#{result["username"]}"
-        end
-      else
-        nickname
-      end
+    else
+      nickname
+    end
   end
 
   def fetch_community_identifier(%Ret.OAuthProvider{
@@ -156,7 +146,7 @@ defmodule Ret.DiscordClient do
     bit_field |> BitFieldUtils.permissions_to_map(@permissions)
   end
 
-  # compute_base_permissions and compute_overwrites based on pseudo-code at 
+  # compute_base_permissions and compute_overwrites based on pseudo-code at
   # https://discordapp.com/developers/docs/topics/permissions#permission-overwrites
   defp compute_base_permissions(discord_user_id, community_id, user_roles) do
     owner_id =
