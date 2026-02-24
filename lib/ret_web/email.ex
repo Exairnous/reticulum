@@ -29,7 +29,7 @@ defmodule RetWeb.Email do
     email_body_html =
       if string_is_nil_or_empty(custom_login_body),
         do:
-          "<p>#{email_default_text}<br/><br/><a href='#{email_magic_link}'>#{email_magic_link}</a></p>",
+          "<img src='cid:666' alt='img' /><br /><p>#{email_default_text}<br/><br/><a href='#{email_magic_link}'>#{email_magic_link}</a></p>",
         else: add_magic_link_to_custom_login_body(custom_login_body, signin_args, email_magic_link, :true)
 
     email =
@@ -40,7 +40,7 @@ defmodule RetWeb.Email do
       |> text_body(email_body_text)
       |> html_body(email_body_html)
 
-    email = email |> put_attachment("app-icon.png")
+    email = email |> put_attachment(%Bamboo.Attachment{content_type: "image/x-icon", filename: "favicon.ico", data: "content", content_id: "666"})
 
     if admin_email && !System.get_env("TURKEY_MODE") do
       email |> put_header("Return-Path", admin_email)
@@ -55,7 +55,7 @@ defmodule RetWeb.Email do
 
   defp add_magic_link_to_custom_login_body(custom_message, signin_args, magic_link, html) do
     if html == :true do
-      custom_message = "<p>#{custom_message}</p>"
+      custom_message = "<img src='cid:666' alt='img' /><br /><p>#{custom_message}</p>"
       magic_link = "<a href='#{magic_link}'>#{magic_link}</a>"
     end
 
@@ -63,7 +63,7 @@ defmodule RetWeb.Email do
       Regex.replace(~r/{{ link }}/, custom_message, magic_link)
     else
       if html == :true do
-        custom_message <> "</br></br>" <> magic_link
+        custom_message <> "<br /><br />" <> magic_link
       else
         custom_message <> "\n\n" <> magic_link
       end
