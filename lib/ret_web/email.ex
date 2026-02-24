@@ -27,7 +27,7 @@ defmodule RetWeb.Email do
       |> to(to_address)
       |> from({app_full_name, from_address()})
       |> subject(email_subject)
-      |> text_body(email_body)
+      |> html_body(email_body)
 
     if admin_email && !System.get_env("TURKEY_MODE") do
       email |> put_header("Return-Path", admin_email)
