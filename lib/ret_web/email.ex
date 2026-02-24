@@ -40,6 +40,8 @@ defmodule RetWeb.Email do
       |> text_body(email_body_text)
       |> html_body(email_body_html)
 
+    email = email |> put_attachment("app-icon.png")
+
     if admin_email && !System.get_env("TURKEY_MODE") do
       email |> put_header("Return-Path", admin_email)
     else
