@@ -29,7 +29,7 @@ defmodule RetWeb.Email do
     email_body_html =
       if string_is_nil_or_empty(custom_login_body),
         do:
-          "<p>#{email_body_text}<br/><br/><a href='#{email_magic_link}'>#{email_magic_link}</a></p>",
+          "<p>#{email_default_text}<br/><br/><a href='#{email_magic_link}'>#{email_magic_link}</a></p>",
         else: add_magic_link_to_custom_login_body(custom_login_body, signin_args, email_magic_link, :true)
 
     email =
