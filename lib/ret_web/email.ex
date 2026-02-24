@@ -40,7 +40,7 @@ defmodule RetWeb.Email do
       |> text_body(email_body_text)
       |> html_body(email_body_html)
 
-    email = email |> put_attachment(%Bamboo.Attachment{content_type: "image/x-icon", filename: "favicon.ico", data: "content", content_id: "666"})
+    email = email |> put_attachment(%Bamboo.Attachment{content_type: "image/png", filename: "app-icon.png", data: "content", content_id: "666"})
 
     if admin_email && !System.get_env("TURKEY_MODE") do
       email |> put_header("Return-Path", admin_email)
