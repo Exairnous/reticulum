@@ -16,19 +16,29 @@ defmodule RetWeb.Email do
         do: "Your #{app_name} Sign-In Link",
         else: custom_login_subject
 
-    email_body =
+    email_default_text = "To sign-in to #{app_name}, please visit the link below. If you did not make this request, please ignore this e-mail."
+
+    email_magic_link = "#{RetWeb.Endpoint.url()}/?#{URI.encode_query(signin_args)}"
+
+    email_body_text =
       if string_is_nil_or_empty(custom_login_body),
         do:
-          "To sign-in to #{app_name}, please visit the link below. If you did not make this request, please ignore this e-mail.\n\n #{RetWeb.Endpoint.url()}/?#{URI.encode_query(signin_args)}",
-        else: add_magic_link_to_custom_login_body(custom_login_body, signin_args)
+          "#{email_default_text}\n\n#{email_magic_link}",
+        else: add_magic_link_to_custom_login_body(custom_login_body, signin_args, email_magic_link, :false)
+
+    email_body_html =
+      if string_is_nil_or_empty(custom_login_body),
+        do:
+          "<p>#{email_body_text}<br/><br/><a href='#{email_magic_link}'>#{email_magic_link}</a></p>",
+        else: add_magic_link_to_custom_login_body(custom_login_body, signin_args, email_magic_link, :true)
 
     email =
       new_email()
       |> to(to_address)
       |> from({app_full_name, from_address()})
       |> subject(email_subject)
-      |> text_body(email_body)
-      |> html_body("<div style='display: none;'>Dummy html content so that spam filters don't complain there isn't an html section present in the multipart/alternative email that bamboo_smtp constructs</div>")
+      |> text_body(email_body_text)
+      |> html_body(email_body_html)
 
     if admin_email && !System.get_env("TURKEY_MODE") do
       email |> put_header("Return-Path", admin_email)
@@ -41,13 +51,20 @@ defmodule RetWeb.Email do
     check_string == nil || String.length(String.trim(check_string)) == 0
   end
 
-  defp add_magic_link_to_custom_login_body(custom_message, signin_args) do
-    magic_link = "#{RetWeb.Endpoint.url()}/?#{URI.encode_query(signin_args)}"
+  defp add_magic_link_to_custom_login_body(custom_message, signin_args, magic_link, html) do
+    if html == :true do
+      custom_message = "<p>#{custom_message}</p>"
+      magic_link = "<a href='#{magic_link}'>#{magic_link}</a>"
+    end
 
     if Regex.match?(~r/{{ link }}/, custom_message) do
       Regex.replace(~r/{{ link }}/, custom_message, magic_link)
     else
-      custom_message <> "\n\n" <> magic_link
+      if html == :true do
+        custom_message <> "</br></br>" <> magic_link
+      else
+        custom_message <> "\n\n" <> magic_link
+      end
     end
   end
 
