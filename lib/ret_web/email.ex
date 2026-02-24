@@ -27,7 +27,8 @@ defmodule RetWeb.Email do
       |> to(to_address)
       |> from({app_full_name, from_address()})
       |> subject(email_subject)
-      |> html_body(email_body)
+      |> text_body(email_body)
+      |> html_body("<div style='display: none;'>Dummy html content so that spam filters don't complain there isn't an html section present in the multipart/alternative email that bamboo_smtp constructs</div>")
 
     if admin_email && !System.get_env("TURKEY_MODE") do
       email |> put_header("Return-Path", admin_email)
