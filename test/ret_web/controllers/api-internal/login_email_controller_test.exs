@@ -21,50 +21,66 @@ defmodule RetWeb.ApiInternal.V1.LoginEmailControllerTest do
 
   describe "PUT update" do
     test "validates the new email address", %{conn: conn} do
-      Account.find_or_create_account_for_email("alice@reticulum.io")
+      Account.find_or_create_account_for_email("alice@reticulum.io-outdated")
 
       assert %{status: 400} =
-               put_change_email_for_login(conn, "not_an_email_address", "alice@reticulum.io")
+               put_change_email_for_login(
+                 conn,
+                 "not_an_email_address",
+                 "alice@reticulum.io-outdated"
+               )
 
       refute Account.exists_for_email?("not_an_email_address")
-      assert Account.exists_for_email?("alice@reticulum.io")
+      assert Account.exists_for_email?("alice@reticulum.io-outdated")
     end
 
     test "changes the account email", %{conn: conn} do
-      Account.find_or_create_account_for_email("alice@reticulum.io")
+      Account.find_or_create_account_for_email("alice@reticulum.io-outdated")
 
       assert %{status: 200} =
-               put_change_email_for_login(conn, "alicia@anotherdomain.com", "alice@reticulum.io")
+               put_change_email_for_login(
+                 conn,
+                 "alicia@anotherdomain.com",
+                 "alice@reticulum.io-outdated"
+               )
 
-      refute Account.exists_for_email?("alice@reticulum.io")
+      refute Account.exists_for_email?("alice@reticulum.io-outdated")
       assert Account.exists_for_email?("alicia@anotherdomain.com")
     end
 
     test "validates that the new email cannot already be in use", %{conn: conn} do
-      Account.find_or_create_account_for_email("alice@reticulum.io")
-      Account.find_or_create_account_for_email("bob@reticulum.io")
+      Account.find_or_create_account_for_email("alice@reticulum.io-outdated")
+      Account.find_or_create_account_for_email("bob@reticulum.io-outdated")
 
       assert %{status: 409} =
-               put_change_email_for_login(conn, "bob@reticulum.io", "alice@reticulum.io")
+               put_change_email_for_login(
+                 conn,
+                 "bob@reticulum.io-outdated",
+                 "alice@reticulum.io-outdated"
+               )
     end
 
     test "validates that the old email is in use", %{conn: conn} do
       assert %{status: 404} =
-               put_change_email_for_login(conn, "bob@reticulum.io", "alice@reticulum.io")
+               put_change_email_for_login(
+                 conn,
+                 "bob@reticulum.io-outdated",
+                 "alice@reticulum.io-outdated"
+               )
     end
 
     test "authenticates the request", %{conn: conn} do
-      Account.find_or_create_account_for_email("alice@reticulum.io")
+      Account.find_or_create_account_for_email("alice@reticulum.io-outdated")
 
       assert %{status: 401} =
                conn
                |> put("/api-internal/v1/change_email_for_login", %{
-                 "old_email" => "alice@reticulum.io",
-                 "new_email" => "bob@reticulum.io"
+                 "old_email" => "alice@reticulum.io-outdated",
+                 "new_email" => "bob@reticulum.io-outdated"
                })
 
-      assert Account.exists_for_email?("alice@reticulum.io")
-      refute Account.exists_for_email?("bob@reticulum.io")
+      assert Account.exists_for_email?("alice@reticulum.io-outdated")
+      refute Account.exists_for_email?("bob@reticulum.io-outdated")
     end
   end
 
