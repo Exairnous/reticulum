@@ -940,7 +940,7 @@ defmodule Ret.MediaSearch do
         preview: %{
           url:
             thumbnail ||
-              "https://asset-bundles-prod.reticulum.io-outdated/bots/avatar_unavailable.png",
+              "https://asset-bundles-prod.reticulum.io.invalid/bots/avatar_unavailable.png",
           width: 720,
           height: 1280
         }
@@ -967,7 +967,7 @@ defmodule Ret.MediaSearch do
         preview: %{
           url:
             thumbnail ||
-              "https://asset-bundles-prod.reticulum.io-outdated/bots/avatar_unavailable.png",
+              "https://asset-bundles-prod.reticulum.io.invalid/bots/avatar_unavailable.png",
           width: 720,
           height: 1280
         }
