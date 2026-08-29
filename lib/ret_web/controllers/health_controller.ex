@@ -17,6 +17,9 @@ defmodule RetWeb.HealthController do
       # Check room routing
       true = Ret.RoomAssigner.get_available_host("") != nil
 
+      # log used memory
+      IO.inspect(:erlang.memory(:total))
+
       send_resp(conn, 200, "ok")
     rescue
       error ->
