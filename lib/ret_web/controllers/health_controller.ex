@@ -19,6 +19,8 @@ defmodule RetWeb.HealthController do
 
       # log used memory
       IO.inspect(:erlang.memory(:total))
+      # log wordsize
+      IO.inspect(:erlang.system_info(:wordsize))
 
       send_resp(conn, 200, "ok")
     rescue
