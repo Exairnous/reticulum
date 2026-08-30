@@ -21,6 +21,9 @@ defmodule RetWeb.HealthController do
       IO.inspect(:erlang.memory(:total))
       # log wordsize
       IO.inspect(:erlang.system_info(:wordsize))
+      # log schedulers
+      IO.inspect(:erlang.system_info(:schedulers))
+      IO.inspect(:erlang.system_info(:schedulers_online))
 
       send_resp(conn, 200, "ok")
     rescue
