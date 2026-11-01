@@ -504,8 +504,35 @@ defmodule Ret.Storage do
     [_, meta_file_path, blob_file_path] =
       paths_for_uuid(owned_file.owned_file_uuid, owned_file_path())
 
-    File.rm!(meta_file_path)
-    File.rm!(blob_file_path)
+    try do
+      File.rm!(meta_file_path)
+    rescue
+      error ->
+        case error.reason do
+          :enoent ->
+            Logger.warning(
+              "Removing meta file failed.  The file \"#{error.path}\" doesn't exist.  Continuing on."
+            )
+
+          _ ->
+            reraise error, __STACKTRACE__
+        end
+    end
+
+    try do
+      File.rm!(blob_file_path)
+    rescue
+      error ->
+        case error.reason do
+          :enoent ->
+            Logger.warning(
+              "Removing blob file failed.  The file \"#{error.path}\" doesn't exist.  Continuing on."
+            )
+
+          _ ->
+            reraise error, __STACKTRACE__
+        end
+    end
   end
 
   def uri_for(id, content_type, token \\ nil) do
